@@ -18,8 +18,8 @@ var (
 
 	cli = mandy.NewCommand(name, mandy.ExitOnError)
 
-	getArg, putArg     bool
-	jsonArg, joinerArg string
+	getArg, putArg, decodeArg bool
+	jsonArg, joinerArg        string
 )
 
 func init() {
@@ -28,6 +28,7 @@ func init() {
 
 	cli.Bool(&getArg, "get", false, "get from clipboard", true)
 	cli.Bool(&putArg, "put", false, "put result on clipboard", true)
+	cli.Bool(&decodeArg, "decode", false, "decode input (restore quotes and ampersands)", true)
 	cli.String(&joinerArg, "joiner", " ", "string to join arguments together", true)
 }
 
@@ -62,6 +63,11 @@ func main() {
 		fmt.Fprintln(os.Stderr, fmt.Errorf("%s: no input", name))
 		fmt.Fprintln(os.Stderr, cli.Usage())
 		os.Exit(1)
+	}
+
+	if decodeArg {
+		jsonArg = strings.ReplaceAll(jsonArg, "&quot;", `"`)
+		jsonArg = strings.ReplaceAll(jsonArg, "&amp;", `&`)
 	}
 
 	fmt.Println(string(jsol.Prettify(jsonArg)))
