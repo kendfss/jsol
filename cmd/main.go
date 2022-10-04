@@ -2,15 +2,20 @@ package main
 
 import (
 	"fmt"
+	"html"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"golang.design/x/clipboard"
 
-	"github.com/kendfss/jsol"
+	"github.com/buger/jsonparser"
+	"github.com/kendfss/but"
+	lib "github.com/kendfss/jsol"
 	"github.com/kendfss/mandy"
+	"github.com/kendfss/pipe"
 )
 
 var (
@@ -19,62 +24,81 @@ var (
 	cli = mandy.NewCommand(name, mandy.ExitOnError)
 
 	getArg, putArg, decodeArg bool
-	jsonArg, joinerArg        string
+	queryArg, jsonArg, sepArg string
 )
 
 func init() {
-	cli.Format = "%s src"
+	cli.Format = "%s [options] [src]+"
 	cli.URL = filepath.Join("https://github.com/kendfss", name)
 
 	cli.Bool(&getArg, "get", false, "get from clipboard", true)
 	cli.Bool(&putArg, "put", false, "put result on clipboard", true)
 	cli.Bool(&decodeArg, "decode", false, "decode input (restore quotes and ampersands)", true)
-	cli.String(&joinerArg, "joiner", " ", "string to join arguments together", true)
+	cli.String(&sepArg, "sep", "/", "separator-string to split query path", true)
+	cli.String(&queryArg, "query", "", "string to join arguments together", true)
 }
 
+type Parsable map[string]Parsable
+
 func main() {
-	jsol.Must(clipboard.Init())
-	jsol.Must(cli.Parse())
+	but.Must(clipboard.Init())
+	but.Must(cli.Parse())
 
-	if cli.HelpWanted() {
-		fmt.Fprintln(os.Stderr, cli.Usage())
-		os.Exit(1)
-	}
+	// if data := getPipe(); len(data) == 0 {
+	if data := pipe.Get(); len(data) == 0 {
 
-	if getArg {
-		jsonArg = string(clipboard.Read(0))
-	} else {
-		if jsonArg == "" {
-			switch len(cli.Args()) {
-			default:
-				jsonArg = strings.Join(cli.Args(), joinerArg)
+		if cli.HelpNeeded() {
+			// println("whoops we made it")
+			fmt.Fprintln(os.Stderr, cli.Usage())
+			os.Exit(1)
+		}
 
-			case 0:
-				buf, err := io.ReadAll(os.Stdin)
-				jsol.Must(err)
+		if getArg {
+			jsonArg = string(clipboard.Read(0))
+		} else {
+			if jsonArg == "" {
+				switch len(cli.Args()) {
+				default:
+					jsonArg = strings.Join(cli.Args(), " ")
 
-				jsonArg = string(buf)
+				case 0:
+					buf, err := io.ReadAll(os.Stdin)
+					lib.Must(err)
 
+					jsonArg = string(buf)
+
+				}
 			}
 		}
-	}
 
-	if len(jsonArg) == 0 {
-		fmt.Fprintln(os.Stderr, fmt.Errorf("%s: no input", name))
-		fmt.Fprintln(os.Stderr, cli.Usage())
-		os.Exit(1)
-	}
+		if len(jsonArg) == 0 {
+			fmt.Fprintln(os.Stderr, fmt.Errorf("%s: no input", name))
+			fmt.Fprintln(os.Stderr, cli.Usage())
+			os.Exit(1)
+		}
 
-	if decodeArg {
-		jsonArg = strings.ReplaceAll(jsonArg, "&quot;", `"`)
-		jsonArg = strings.ReplaceAll(jsonArg, "&amp;", `&`)
-	}
+		if decodeArg {
+			jsonArg = html.UnescapeString(jsonArg)
+		}
 
-	fmt.Println(string(jsol.Prettify(jsonArg)))
+		if len(queryArg) > 0 {
+			out, _, _, err := jsonparser.Get([]byte(jsonArg), strings.Split(queryArg, sepArg)...)
+			but.Exif(err)
+			jsonArg = string(out)
+		}
+		fmt.Println(string(lib.MustPrettify(jsonArg)))
 
-	if putArg {
-		clipboard.Write(0, []byte(jsol.Format(jsonArg)))
+		if putArg {
+			clipboard.Write(0, []byte(lib.Format(jsonArg)))
+		}
+	} else {
+		if len(queryArg) > 0 {
+			out, _, _, err := jsonparser.Get(data, strings.Split(queryArg, sepArg)...)
+			but.Exif(err)
+			data = out
+		}
 
+		fmt.Println(string(lib.MustPrettify(data)))
 	}
 }
 
@@ -83,4 +107,17 @@ func getErr(to *error) {
 	if *to != nil {
 		clipboard.Write(0, []byte((*to).Error()))
 	}
+}
+
+func getPipe() []byte {
+	var data []byte
+	info, err := os.Stdin.Stat()
+	but.Must(err)
+
+	if info.Size() > 0 {
+		data, err = ioutil.ReadAll(os.Stdin)
+		but.Must(err)
+	}
+
+	return data
 }

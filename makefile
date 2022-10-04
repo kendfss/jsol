@@ -29,7 +29,7 @@ pre:
 post:
 	rm -rf $(builddir)
 
-tidy: $(which go) $($(root)/go.mod)
+tidy: $(shell which go) $($(root)/go.mod)
 	go mod tidy
 
 build: $(prefix) pre $(builddir)

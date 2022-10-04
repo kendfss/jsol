@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 
 	pj "github.com/hokaccha/go-prettyjson"
+
+	"github.com/kendfss/but"
 )
 
 func Format(arg string) (out string) {
@@ -19,36 +21,49 @@ func Format(arg string) (out string) {
 
 func parseSlice(arg string) string {
 	m := make([]interface{}, 0) //
-	must(json.Unmarshal([]byte(arg), &m))
+	but.Must(json.Unmarshal([]byte(arg), &m))
 	data, err := json.MarshalIndent(m, "", "\t")
-	must(err)
+	but.Must(err)
 
 	return string(data)
 }
 
 func parseMap(arg string) string {
 	m := make(map[interface{}]interface{}) //
-	must(json.Unmarshal([]byte(arg), &m))
+	but.Must(json.Unmarshal([]byte(arg), &m))
 	data, err := json.MarshalIndent(m, "", "\t")
-	must(err)
+	but.Must(err)
 
 	return string(data)
 }
 
-func Prettify(obj any) (data []byte) {
-	var err error
+func Prettify(obj any) (data []byte, err error) {
+	var tmpData []byte
 	switch obj.(type) {
 	case string:
 		data = []byte(obj.(string))
 	case []byte:
 		data = obj.([]byte)
 	default:
-		data, err = json.Marshal(obj)
-		must(err)
+		tmpData, err = json.MarshalIndent(obj, "", "  ")
+		if err != nil {
+			return nil, err
+		}
+		data = tmpData
 	}
 
 	data, err = pj.Format([]byte(data))
-	must(err)
+	if err != nil {
+		return nil, err
+	}
 
-	return data
+	return data, err
+}
+
+func MustPrettify(obj any) []byte {
+	out, err := Prettify(obj)
+	if err != nil {
+		panic(err)
+	}
+	return out
 }
