@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 
 	pj "github.com/hokaccha/go-prettyjson"
-
-	"github.com/kendfss/but"
 )
 
 func Format(arg string) (out string) {
@@ -21,18 +19,18 @@ func Format(arg string) (out string) {
 
 func parseSlice(arg string) string {
 	m := make([]interface{}, 0) //
-	but.Must(json.Unmarshal([]byte(arg), &m))
+	must(json.Unmarshal([]byte(arg), &m))
 	data, err := json.MarshalIndent(m, "", "\t")
-	but.Must(err)
+	must(err)
 
 	return string(data)
 }
 
 func parseMap(arg string) string {
 	m := make(map[interface{}]interface{}) //
-	but.Must(json.Unmarshal([]byte(arg), &m))
+	must(json.Unmarshal([]byte(arg), &m))
 	data, err := json.MarshalIndent(m, "", "\t")
-	but.Must(err)
+	must(err)
 
 	return string(data)
 }

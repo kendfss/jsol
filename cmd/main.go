@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"html"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -38,17 +37,12 @@ func init() {
 	cli.String(&queryArg, "query", "", "string to join arguments together", true)
 }
 
-type Parsable map[string]Parsable
-
 func main() {
 	but.Must(clipboard.Init())
 	but.Must(cli.Parse())
 
-	// if data := getPipe(); len(data) == 0 {
 	if data := pipe.Get(); len(data) == 0 {
-
 		if cli.HelpNeeded() {
-			// println("whoops we made it")
 			fmt.Fprintln(os.Stderr, cli.Usage())
 			os.Exit(1)
 		}
@@ -83,7 +77,7 @@ func main() {
 
 		if len(queryArg) > 0 {
 			out, _, _, err := jsonparser.Get([]byte(jsonArg), strings.Split(queryArg, sepArg)...)
-			but.Exif(err)
+			but.Exif(err != nil)
 			jsonArg = string(out)
 		}
 		fmt.Println(string(lib.MustPrettify(jsonArg)))
@@ -94,7 +88,7 @@ func main() {
 	} else {
 		if len(queryArg) > 0 {
 			out, _, _, err := jsonparser.Get(data, strings.Split(queryArg, sepArg)...)
-			but.Exif(err)
+			but.Exif(err != nil)
 			data = out
 		}
 
@@ -115,7 +109,7 @@ func getPipe() []byte {
 	but.Must(err)
 
 	if info.Size() > 0 {
-		data, err = ioutil.ReadAll(os.Stdin)
+		data, err = io.ReadAll(os.Stdin)
 		but.Must(err)
 	}
 
