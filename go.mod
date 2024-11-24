@@ -1,37 +1,27 @@
 module github.com/kendfss/jsol
 
-go 1.18
+go 1.22.2
 
-replace (
-	github.com/buger/jsonparser => ../../buger/jsonparser
-	github.com/kendfss/but => ../but
-	github.com/kendfss/iters => ../iters
-	github.com/kendfss/mandy => ../mandy
-	github.com/kendfss/oprs => ../oprs
-	github.com/kendfss/oracle => ../oracle
-	github.com/kendfss/pipe => ../pipe
-	github.com/kendfss/rules => ../rules
-	golang.org/x/exp => ../exp
-)
+toolchain go1.23.2
 
 require (
-	github.com/buger/jsonparser v0.0.0-00010101000000-000000000000
+	github.com/buger/jsonparser v1.1.1
 	github.com/hokaccha/go-prettyjson v0.0.0-20211117102719-0474bc63780f
-	github.com/kendfss/but v0.0.0-00010101000000-000000000000
-	github.com/kendfss/mandy v0.0.0-00010101000000-000000000000
-	github.com/kendfss/pipe v0.0.0-00010101000000-000000000000
-	golang.design/x/clipboard v0.6.1
+	github.com/kendfss/but v1.1.0
+	github.com/kendfss/mandy v1.0.2
+	github.com/kendfss/pipe v1.0.0
+	golang.design/x/clipboard v0.7.0
 )
 
 require (
-	github.com/fatih/color v1.13.0 // indirect
-	github.com/kendfss/iters v0.0.0-00010101000000-000000000000 // indirect
-	github.com/kendfss/oprs v0.0.0-00010101000000-000000000000 // indirect
-	github.com/kendfss/rules v0.0.0-00010101000000-000000000000 // indirect
-	github.com/mattn/go-colorable v0.1.9 // indirect
-	github.com/mattn/go-isatty v0.0.14 // indirect
-	golang.org/x/exp/shiny v0.0.0-20221002003631-540bb7301a08 // indirect
-	golang.org/x/image v0.0.0-20211028202545-6944b10bf410 // indirect
-	golang.org/x/mobile v0.0.0-20210716004757-34ab1303b554 // indirect
-	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
+	github.com/fatih/color v1.18.0 // indirect
+	github.com/kendfss/iters v1.0.0 // indirect
+	github.com/kendfss/oprs v1.0.0 // indirect
+	github.com/kendfss/rules v1.0.0 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
+	golang.org/x/exp v0.0.0-20190731235908-ec7cb31e5a56 // indirect
+	golang.org/x/image v0.6.0 // indirect
+	golang.org/x/mobile v0.0.0-20230301163155-e0f57694e12c // indirect
+	golang.org/x/sys v0.25.0 // indirect
 )
